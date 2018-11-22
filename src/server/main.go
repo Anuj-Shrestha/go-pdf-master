@@ -2,21 +2,21 @@ package main
 
 import (
 	"fmt"
+	"github.com/hhrutter/pdfcpu/pkg/api"
 	"github.com/hhrutter/pdfcpu/pkg/pdfcpu"
 	"github.com/jung-kurt/gofpdf"
 	"log"
 	"net/http"
 	"strings"
-	"github.com/hhrutter/pdfcpu/pkg/api"
 )
 
 func main()  {
-	http.HandleFunc("/", sayHello)
-	http.HandleFunc("/pdf", createPdf)
-	if err := http.ListenAndServe(":8081", nil); err != nil {
-		panic(err)
-	}
-
+	//http.HandleFunc("/", sayHello)
+	//http.HandleFunc("/pdf", createPdf)
+	//if err := http.ListenAndServe(":8081", nil); err != nil {
+	//	panic(err)
+	//}
+	hello()
 
 }
 
@@ -31,17 +31,157 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 
 func createPdf(w http.ResponseWriter, r *http.Request) {
 	log.Println("here")
+
+	w.Write([]byte("pdf"))
+
+	hello()
+
+	//exampleProcessMerge()
+	//exampleProcessOptimize()
+	//TestFooterFuncLpi()
+	//gofpdf.ComparePDFFiles("hello.pdf", "footer.pdf", true)
+	//imageFile2()
+	}
+
+func hello() {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.AddPage()
 	pdf.SetFont("Arial", "B", 16)
-	pdf.Cell(40, 10, "Hello, world 5")
-	err := pdf.OutputFileAndClose("hello.pdf")
+	pdf.Cell(40, 10, "Nurse Profile")
+
+	pdf.MoveTo(20, 25)
+	pdf.LineTo(170, 25)
+	pdf.ClosePath()
+	pdf.SetFillColor(200, 200, 200)
+	pdf.SetLineWidth(3)
+	pdf.DrawPath("DF")
+
+	imageFile(pdf)
+
+	pdf.MoveTo(45, 30)
+	pdf.LineTo(45, 65)
+	//pdf.ArcTo(170, 40, 20, 20, 0, 90, 0)
+	//pdf.CurveTo(190, 100, 105, 100)
+	//pdf.CurveBezierCubicTo(20, 100, 105, 200, 20, 200)
+	pdf.ClosePath()
+	pdf.SetFillColor(200, 200, 200)
+	pdf.SetLineWidth(1)
+	pdf.DrawPath("DF")
+
+	pdf.SetFont("Times", "", 14)
+
+	pdf.SetLeftMargin(50)
+	pdf.SetFontSize(14)
+	_, lineHt := pdf.GetFontSize()
+	pdf.SetY(30)
+	pdf.Cell(40, 5, "Nurse Hellen")
+	pdf.SetY(40)
+
+	htmlStr := `You can now easily print text mixing different styles: <b>bold</b>, ` +
+		`<i>italic</i>, <u>underlined</u>, or <b><i><u>all at once</u></i></b>!<br><br>` +
+		`<center>You can also center text.</center>` +
+		`<right>Or align it to the right.</right>` +
+		`You can also insert links on text, such as ` +
+		`<a href="http://www.fpdf.org">www.fpdf.org</a>, or on an image: click on the logo.`
+	html := pdf.HTMLBasicNew()
+	html.Write(lineHt, htmlStr)
+
+	//pdf.CellFormat(40, 40, "Name: Nurse Hellen", "*", 0, "R", false, 0, "")
+
+	err := pdf.OutputFileAndClose("profile.pdf")
 	log.Println(err)
-	w.Write([]byte("pdf"))
-	exampleProcessMerge()
 }
 
+func imageFile(pdf *gofpdf.Fpdf) {
+	var opt gofpdf.ImageOptions
 
+	//pdf := gofpdf.New("P", "mm", "A4", "")
+	//pdf.AddPage()
+	pdf.SetFont("Arial", "", 11)
+	pdf.SetX(60)
+	opt.ImageType = "jpeg"
+	//pdf.ImageOptions("download.jpeg", -10, 10, 30, 0, false, opt, 0, "")
+	opt.AllowNegativePosition = true
+	pdf.ImageOptions("download.jpeg", 10, 30, 30, 0, false, opt, 0, "")
+	//err := pdf.OutputFileAndClose("image.pdf")
+	//log.Println(err)
+}
+
+func imageFile2() {
+	var opt gofpdf.ImageOptions
+
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.AddPage()
+	pdf.SetFont("Arial", "", 11)
+	pdf.SetX(60)
+	opt.ImageType = "png"
+	pdf.ImageOptions("Test.png", -10, 10, 30, 0, false, opt, 0, "")
+	opt.AllowNegativePosition = true
+	pdf.ImageOptions("Test.png", -10, 50, 30, 0, false, opt, 0, "")
+	err := pdf.OutputFileAndClose("image2.pdf")
+	log.Println(err)
+}
+
+func TestFooterFuncLpi() {
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	var (
+		oldFooterFnc  = "oldFooterFnc"
+		bothPages     = "bothPages"
+		firstPageOnly = "firstPageOnly"
+		lastPageOnly  = "lastPageOnly"
+	)
+
+	// This set just for testing, only set SetFooterFuncLpi.
+	pdf.SetFooterFunc(func() {
+		pdf.SetY(-15)
+		pdf.SetFont("Arial", "I", 8)
+		pdf.CellFormat(0, 10, oldFooterFnc,
+			"", 0, "C", false, 0, "")
+	})
+	pdf.SetFooterFuncLpi(func(lastPage bool) {
+		pdf.SetY(-15)
+		pdf.SetFont("Arial", "I", 8)
+		pdf.CellFormat(0, 10, bothPages, "", 0, "L", false, 0, "")
+		if !lastPage {
+			pdf.CellFormat(0, 10, firstPageOnly, "", 0, "C", false, 0, "")
+		} else {
+			pdf.CellFormat(0, 10, lastPageOnly, "", 0, "C", false, 0, "")
+		}
+	})
+	pdf.AddPage()
+	pdf.SetFont("Arial", "B", 16)
+	for j := 1; j <= 40; j++ {
+		pdf.CellFormat(0, 10, fmt.Sprintf("Printing line number %d", j),
+			"", 1, "", false, 0, "")
+	}
+
+	pdf.AddPage()
+	pdf.MoveTo(20, 20)
+	pdf.LineTo(170, 20)
+	pdf.ArcTo(170, 40, 20, 20, 0, 90, 0)
+	pdf.CurveTo(190, 100, 105, 100)
+	pdf.CurveBezierCubicTo(20, 100, 105, 200, 20, 200)
+	pdf.ClosePath()
+	pdf.SetFillColor(200, 200, 200)
+	pdf.SetLineWidth(3)
+	pdf.DrawPath("DF")
+
+	err := pdf.OutputFileAndClose("footer.pdf")
+	log.Println(err)
+}
+//func readAndWriteContext() {
+//	//filenamesIn := []string{"hello.pdf", "hello.pdf", "hello.pdf"}
+//
+//	ctx, err := api.ReadContextFromFile("hello.pdf", pdfcpu.NewDefaultConfiguration())
+//	if err != nil {
+//		return
+//	}
+//
+//	err := writeSinglePagePDF(ctx, i, dirOut)
+//	if err != nil {
+//		return err
+//	}
+//}
 func exampleProcessMerge() {
 
 	// Concatenate this sequence of PDF files:
@@ -86,7 +226,7 @@ func exampleProcessOptimize() {
 	// Configure end of line sequence for writing.
 	config.Eol = pdfcpu.EolLF
 
-	_, err := api.Process(api.OptimizeCommand("in.pdf", "out.pdf", config))
+	_, err := api.Process(api.OptimizeCommand("merge.pdf", "optimize.pdf", config))
 	if err != nil {
 		return
 	}
