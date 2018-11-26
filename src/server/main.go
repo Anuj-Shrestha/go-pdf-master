@@ -16,7 +16,9 @@ func main()  {
 	//if err := http.ListenAndServe(":8081", nil); err != nil {
 	//	panic(err)
 	//}
-	hello()
+	//hello()
+	//exampleProcessMerge()
+	exampleProcessExtractPages()
 
 }
 
@@ -25,7 +27,6 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 	message = strings.TrimPrefix(message, "/")
 	message = "Hello bro " + message
 	w.Write([]byte(message))
-
 
 }
 
@@ -36,7 +37,6 @@ func createPdf(w http.ResponseWriter, r *http.Request) {
 
 	hello()
 
-	//exampleProcessMerge()
 	//exampleProcessOptimize()
 	//TestFooterFuncLpi()
 	//gofpdf.ComparePDFFiles("hello.pdf", "footer.pdf", true)
@@ -88,8 +88,21 @@ func hello() {
 
 	//pdf.CellFormat(40, 40, "Name: Nurse Hellen", "*", 0, "R", false, 0, "")
 
+	//pdf.SetY(80)
+	pdf.AddPage()
+
+	pdf.Text(10, 10, "Driving Licence:")
+	var opt gofpdf.ImageOptions
+
+	opt.ImageType = "jpeg"
+	//pdf.ImageOptions("download.jpeg", -10, 10, 30, 0, false, opt, 0, "")
+	opt.AllowNegativePosition = true
+	pdf.ImageOptions("driving.JPG", 10, 20, 80, 0, false, opt, 0, "")
+
+
 	err := pdf.OutputFileAndClose("profile.pdf")
 	log.Println(err)
+
 }
 
 func imageFile(pdf *gofpdf.Fpdf) {
@@ -183,11 +196,11 @@ func TestFooterFuncLpi() {
 //	}
 //}
 func exampleProcessMerge() {
-
+	log.Println("here at merge")
 	// Concatenate this sequence of PDF files:
-	filenamesIn := []string{"hello.pdf", "hello.pdf", "hello.pdf"}
+	filenamesIn := []string{"profile.pdf", "footer.pdf", "hello.pdf"}
 
-	_, err := api.Process(api.MergeCommand(filenamesIn, "merge.pdf", pdfcpu.NewDefaultConfiguration()))
+	_, err := api.Process(api.MergeCommand(filenamesIn, "mergeProfile.pdf", pdfcpu.NewDefaultConfiguration()))
 	if err != nil {
 		return
 	}
@@ -271,15 +284,15 @@ func exampleProcessTrim() {
 func exampleProcessExtractPages() {
 
 	// Extract single-page PDFs for pages 3, 4 and 5.
-	selectedPages := []string{"3..5"}
+	selectedPages := []string{"2..4"}
 
 	config := pdfcpu.NewDefaultConfiguration()
 
 	// Set optional password(s).
 	//config.UserPW = "upw"
 	//config.OwnerPW = "opw"
-
-	_, err := api.Process(api.ExtractPagesCommand("in.pdf", "dirOut", selectedPages, config))
+	log.Println("here at dirOut")
+	_, err := api.Process(api.ExtractPagesCommand("mergeProfile.pdf", "output/", selectedPages, config))
 	if err != nil {
 		return
 	}
