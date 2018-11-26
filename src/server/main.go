@@ -16,32 +16,16 @@ func main()  {
 	//if err := http.ListenAndServe(":8081", nil); err != nil {
 	//	panic(err)
 	//}
-	//hello()
-	//exampleProcessMerge()
-	exampleProcessExtractPages()
 
-}
-
-func sayHello(w http.ResponseWriter, r *http.Request) {
-	message := r.URL.Path
-	message = strings.TrimPrefix(message, "/")
-	message = "Hello bro " + message
-	w.Write([]byte(message))
-
-}
-
-func createPdf(w http.ResponseWriter, r *http.Request) {
-	log.Println("here")
-
-	w.Write([]byte("pdf"))
-
+	//creates simple pdf. includes lines, image, html string
 	hello()
 
-	//exampleProcessOptimize()
-	//TestFooterFuncLpi()
-	//gofpdf.ComparePDFFiles("hello.pdf", "footer.pdf", true)
-	//imageFile2()
-	}
+	//expample for merging two pdfs using pdfcpu
+	exampleProcessMerge()
+
+	//exampleProcessExtractPages()
+
+}
 
 func hello() {
 	pdf := gofpdf.New("P", "mm", "A4", "")
@@ -105,6 +89,7 @@ func hello() {
 
 }
 
+// generate image
 func imageFile(pdf *gofpdf.Fpdf) {
 	var opt gofpdf.ImageOptions
 
@@ -117,24 +102,17 @@ func imageFile(pdf *gofpdf.Fpdf) {
 	opt.AllowNegativePosition = true
 	pdf.ImageOptions("download.jpeg", 10, 30, 30, 0, false, opt, 0, "")
 	//err := pdf.OutputFileAndClose("image.pdf")
-	//log.Println(err)
 }
 
-func imageFile2() {
-	var opt gofpdf.ImageOptions
-
-	pdf := gofpdf.New("P", "mm", "A4", "")
-	pdf.AddPage()
-	pdf.SetFont("Arial", "", 11)
-	pdf.SetX(60)
-	opt.ImageType = "png"
-	pdf.ImageOptions("Test.png", -10, 10, 30, 0, false, opt, 0, "")
-	opt.AllowNegativePosition = true
-	pdf.ImageOptions("Test.png", -10, 50, 30, 0, false, opt, 0, "")
-	err := pdf.OutputFileAndClose("image2.pdf")
-	log.Println(err)
+// basing pdf
+func sayHello(w http.ResponseWriter, r *http.Request) {
+	message := r.URL.Path
+	message = strings.TrimPrefix(message, "/")
+	message = "Hello bro " + message
+	w.Write([]byte(message))
 }
 
+// footer expample
 func TestFooterFuncLpi() {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	var (
@@ -182,19 +160,8 @@ func TestFooterFuncLpi() {
 	err := pdf.OutputFileAndClose("footer.pdf")
 	log.Println(err)
 }
-//func readAndWriteContext() {
-//	//filenamesIn := []string{"hello.pdf", "hello.pdf", "hello.pdf"}
-//
-//	ctx, err := api.ReadContextFromFile("hello.pdf", pdfcpu.NewDefaultConfiguration())
-//	if err != nil {
-//		return
-//	}
-//
-//	err := writeSinglePagePDF(ctx, i, dirOut)
-//	if err != nil {
-//		return err
-//	}
-//}
+
+// merge example
 func exampleProcessMerge() {
 	log.Println("here at merge")
 	// Concatenate this sequence of PDF files:
@@ -207,6 +174,9 @@ func exampleProcessMerge() {
 
 }
 
+
+
+// ***** Following are Examples of pdfcpu functions *****
 func exampleProcessValidate() {
 
 	config := pdfcpu.NewDefaultConfiguration()
@@ -522,20 +492,3 @@ func exampleProcessWatermark() {
 	}
 
 }
-//package main
-//import (
-//	"net/http"
-//	"strings"
-//)
-//func sayHello(w http.ResponseWriter, r *http.Request) {
-//	message := r.URL.Path
-//	message = strings.TrimPrefix(message, "/")
-//	message = "Hello " + message
-//	w.Write([]byte(message))
-//}
-//func main() {
-//	http.HandleFunc("/", sayHello)
-//	if err := http.ListenAndServe(":8080", nil); err != nil {
-//		panic(err)
-//	}
-//}
